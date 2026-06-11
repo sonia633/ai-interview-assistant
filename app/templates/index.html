@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
+  <div class="row align-items-center">
+    <div class="col-lg-7">
+      <h1 class="display-5 fw-bold">Ace your next interview with AI</h1>
+      <p class="lead text-muted">
+        Upload your resume, let AI extract your skills and predict your ideal role,
+        then practice with personalised questions and instant, scored feedback.
+      </p>
+      {% if user %}
+      <a href="/dashboard" class="btn btn-primary btn-lg">Go to dashboard</a>
+      {% else %}
+      <a href="/register" class="btn btn-primary btn-lg">Get started — it's free</a>
+      <a href="/login" class="btn btn-outline-secondary btn-lg ms-2">Login</a>
+      {% endif %}
+    </div>
+    <div class="col-lg-5 text-center d-none d-lg-block">
+      <i class="bi bi-robot" style="font-size:10rem;color:#0d6efd;"></i>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  {% set features = [
+    ("bi-file-earmark-pdf", "Resume parsing", "Extract name, contact, skills, education and experience from your PDF."),
+    ("bi-diagram-3", "Role prediction", "An ML model predicts your best-fit job role from your skills."),
+    ("bi-chat-dots", "AI questions", "Personalised technical, behavioral and problem-solving questions."),
+    ("bi-graph-up", "Scored feedback", "Every answer scored 0-100 with strengths and weaknesses."),
+  ] %}
+  {% for icon, title, desc in features %}
+  <div class="col-md-6 col-lg-3">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body text-center">
+        <i class="bi {{ icon }} text-primary" style="font-size:2.5rem;"></i>
+        <h5 class="mt-3">{{ title }}</h5>
+        <p class="text-muted small">{{ desc }}</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

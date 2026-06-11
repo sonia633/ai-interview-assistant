@@ -1,0 +1,6 @@
+body { min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1 0 auto; }
+.card { border-radius: .75rem; }
+.navbar-brand i { color: #0d6efd; }
+.display-6 { font-weight: 600; }
+textarea { resize: vertical; }

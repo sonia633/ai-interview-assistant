@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Interview — {{ app_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-4">AI Interview</h2>
+
+<div id="setup" class="card shadow-sm mb-4"><div class="card-body">
+  <h5>Start a new session</h5>
+  <form id="startForm" class="row g-3">
+    <div class="col-md-5">
+      <label class="form-label">Based on resume</label>
+      <select name="resume_id" class="form-select">
+        <option value="">— None (generic) —</option>
+        {% for r in resumes %}
+        <option value="{{ r.id }}">{{ r.candidate_name or r.original_filename }} ({{ r.predicted_role or '—' }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Target role (optional)</label>
+      <input type="text" name="role" class="form-control" placeholder="e.g. Data Scientist">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label"># Questions</label>
+      <input type="number" name="num_questions" class="form-control" value="6" min="3" max="20">
+    </div>
+    <div class="col-12">
+      <button class="btn btn-primary" type="submit">Generate questions</button>
+    </div>
+  </form>
+</div></div>
+
+<div id="questions"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentInterview = null;
+
+document.getElementById('startForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const body = {
+    resume_id: f.get('resume_id') ? parseInt(f.get('resume_id')) : null,
+    role: f.get('role') || null,
+    num_questions: parseInt(f.get('num_questions'))
+  };
+  const res = await api('/api/interviews', 'POST', body);
+  if (!res.ok) { showAlert(res.data.detail || 'Failed to start', 'danger'); return; }
+  currentInterview = res.data.id;
+  const q = await api('/api/interviews/' + currentInterview + '/questions', 'GET');
+  renderQuestions(q.data);
+});
+
+function renderQuestions(questions) {
+  const container = document.getElementById('questions');
+  container.innerHTML = '<h4 class="mb-3">Your questions</h4>';
+  questions.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'card shadow-sm mb-3';
+    div.innerHTML = `
+      <div class="card-body">
+        <span class="badge bg-secondary text-uppercase">${q.category.replace('_',' ')}</span>
+        <p class="mt-2 fw-semibold">Q${i+1}. ${escapeHtml(q.text)}</p>
+        <textarea class="form-control mb-2" id="ans-${q.id}" rows="3" placeholder="Type your answer…"></textarea>
+        <button class="btn btn-sm btn-success" onclick="submitAnswer(${q.id})">Submit answer</button>
+        <div id="fb-${q.id}" class="mt-2"></div>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+async function submitAnswer(qid) {
+  const text = document.getElementById('ans-' + qid).value;
+  const res = await api('/api/interviews/answers', 'POST', { question_id: qid, text });
+  const fb = document.getElementById('fb-' + qid);
+  if (!res.ok) { fb.innerHTML = '<div class="text-danger small">' + (res.data.detail||'Error') + '</div>'; return; }
+  const d = res.data;
+  const colour = d.score >= 70 ? 'success' : d.score >= 40 ? 'warning' : 'danger';
+  fb.innerHTML = `
+    <div class="alert alert-${colour} py-2 mb-1"><strong>Score: ${d.score}/100</strong> — ${escapeHtml(d.feedback)}</div>
+    <div class="small"><strong class="text-success">Strengths:</strong> ${d.strengths.map(escapeHtml).join('; ')}</div>
+    <div class="small"><strong class="text-danger">Improve:</strong> ${d.weaknesses.map(escapeHtml).join('; ')}</div>`;
+}
+</script>
+{% endblock %}

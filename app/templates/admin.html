@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Admin — {{ app_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-4">Admin Panel</h2>
+
+<div class="row g-3 mb-4" id="statCards"></div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm"><div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Users</h5>
+      </div>
+      <table class="table table-sm mt-3"><thead>
+        <tr><th>ID</th><th>Name</th><th>Email</th><th>Admin</th><th>Active</th><th></th></tr>
+      </thead><tbody id="userRows"></tbody></table>
+    </div></div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card shadow-sm mb-4"><div class="card-body">
+      <h5>Dataset &amp; model</h5>
+      <div id="datasetInfo" class="small text-muted"></div>
+      <button class="btn btn-sm btn-warning mt-2" onclick="retrain()">Retrain role model</button>
+    </div></div>
+    <div class="card shadow-sm"><div class="card-body">
+      <h5>Recent logs</h5>
+      <ul id="logList" class="small list-unstyled mb-0"></ul>
+    </div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function load() {
+  const stats = (await api('/api/admin/stats', 'GET')).data;
+  document.getElementById('statCards').innerHTML = Object.entries(stats).map(([k,v]) =>
+    `<div class="col-6 col-md-3"><div class="card text-bg-dark"><div class="card-body">
+       <div class="h6 text-capitalize">${k}</div><div class="display-6">${v}</div></div></div></div>`).join('');
+
+  const users = (await api('/api/admin/users', 'GET')).data;
+  document.getElementById('userRows').innerHTML = users.map(u => `
+    <tr>
+      <td>${u.id}</td><td>${escapeHtml(u.full_name)}</td><td>${escapeHtml(u.email)}</td>
+      <td>${u.is_admin ? '✔' : ''}</td>
+      <td>${u.is_active ? '<span class="text-success">yes</span>' : '<span class="text-danger">no</span>'}</td>
+      <td><button class="btn btn-sm btn-outline-secondary" onclick="toggle(${u.id})">Toggle</button></td>
+    </tr>`).join('');
+
+  const ds = (await api('/api/admin/dataset', 'GET')).data;
+  document.getElementById('datasetInfo').innerHTML =
+    `Roles: ${ds.roles.length}<br>Total training samples: ${ds.total_samples}`;
+
+  const logs = (await api('/api/admin/logs?limit=15', 'GET')).data;
+  document.getElementById('logList').innerHTML = logs.map(l =>
+    `<li><code>${escapeHtml(l.action)}</code> ${escapeHtml(l.detail||'')}</li>`).join('');
+}
+async function toggle(id) { await api('/api/admin/users/'+id+'/toggle-active', 'PATCH'); load(); }
+async function retrain() {
+  showAlert('Retraining…', 'info');
+  const res = await api('/api/admin/model/retrain', 'POST');
+  showAlert(res.data.detail || 'Done', res.ok ? 'success' : 'danger');
+}
+load();
+</script>
+{% endblock %}

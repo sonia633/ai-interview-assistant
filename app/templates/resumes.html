@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Resumes — {{ app_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-4">My Resumes</h2>
+
+<div class="card shadow-sm mb-4"><div class="card-body">
+  <h5>Upload a resume (PDF)</h5>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <div class="input-group">
+      <input type="file" name="file" accept="application/pdf" class="form-control" required>
+      <button class="btn btn-primary" type="submit">Upload &amp; analyse</button>
+    </div>
+    <div class="form-text">Max 5 MB. PDF only.</div>
+  </form>
+</div></div>
+
+<div class="row g-3">
+  {% for r in resumes %}
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <h5 class="card-title">{{ r.candidate_name or r.original_filename }}</h5>
+      <span class="badge bg-primary">{{ r.predicted_role or 'Unknown role' }}</span>
+      {% if r.role_confidence %}<span class="badge bg-light text-dark">{{ (r.role_confidence*100)|round(1) }}% confidence</span>{% endif %}
+      <ul class="list-unstyled mt-3 small mb-0">
+        {% if r.email %}<li><i class="bi bi-envelope"></i> {{ r.email }}</li>{% endif %}
+        {% if r.phone %}<li><i class="bi bi-telephone"></i> {{ r.phone }}</li>{% endif %}
+        {% if r.languages %}<li><i class="bi bi-translate"></i> {{ r.languages }}</li>{% endif %}
+      </ul>
+      <a href="/interview" class="btn btn-sm btn-outline-primary mt-3">Start interview</a>
+    </div></div>
+  </div>
+  {% else %}
+  <p class="text-muted">No resumes uploaded yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  showAlert('Uploading and analysing your resume…', 'info');
+  const res = await fetch('/api/resumes/upload', { method: 'POST', body: fd });
+  const data = await res.json();
+  if (res.ok) { showAlert('Resume analysed! Predicted role: ' + data.predicted_role, 'success');
+                setTimeout(() => location.reload(), 1200); }
+  else { showAlert(data.detail || 'Upload failed', 'danger'); }
+});
+</script>
+{% endblock %}

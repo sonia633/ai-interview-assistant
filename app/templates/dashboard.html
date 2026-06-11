@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — {{ app_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-4">Dashboard</h2>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card text-bg-primary shadow-sm"><div class="card-body">
+      <div class="h6">Total interviews</div>
+      <div class="display-6">{{ overview.total_interviews }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-success shadow-sm"><div class="card-body">
+      <div class="h6">Completed</div>
+      <div class="display-6">{{ overview.completed_interviews }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-info shadow-sm"><div class="card-body">
+      <div class="h6">Average score</div>
+      <div class="display-6">{{ overview.average_score }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-secondary shadow-sm"><div class="card-body">
+      <div class="h6">Resumes</div>
+      <div class="display-6">{{ resumes|length }}</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm"><div class="card-body">
+      <h5>Progress over time</h5>
+      <canvas id="progressChart" height="160"></canvas>
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm"><div class="card-body">
+      <h5>Skill distribution</h5>
+      <canvas id="skillChart" height="160"></canvas>
+    </div></div>
+  </div>
+</div>
+
+<div class="mt-4">
+  <a href="/interview" class="btn btn-primary"><i class="bi bi-play-circle"></i> Start a new interview</a>
+  <a href="/resumes" class="btn btn-outline-secondary"><i class="bi bi-upload"></i> Manage resumes</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script id="overview-data" type="application/json">{{ overview | tojson }}</script>
+<script>
+const overview = JSON.parse(document.getElementById('overview-data').textContent);
+
+new Chart(document.getElementById('progressChart'), {
+  type: 'line',
+  data: {
+    labels: overview.progress.map((p, i) => 'Interview ' + (i + 1)),
+    datasets: [{ label: 'Avg score', data: overview.progress.map(p => p.score),
+                 borderColor: '#0d6efd', tension: 0.3, fill: false }]
+  },
+  options: { scales: { y: { min: 0, max: 100 } } }
+});
+
+const skills = overview.skill_distribution || {};
+new Chart(document.getElementById('skillChart'), {
+  type: 'bar',
+  data: {
+    labels: Object.keys(skills),
+    datasets: [{ label: 'Frequency', data: Object.values(skills), backgroundColor: '#198754' }]
+  },
+  options: { indexAxis: 'y' }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}History — {{ app_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-4">Interview History</h2>
+
+<div class="card shadow-sm"><div class="card-body">
+  <table class="table table-hover align-middle mb-0">
+    <thead>
+      <tr><th>#</th><th>Role</th><th>Status</th><th>Date</th><th>Average score</th></tr>
+    </thead>
+    <tbody>
+      {% for i in interviews %}
+      <tr>
+        <td>{{ i.id }}</td>
+        <td>{{ i.role or '—' }}</td>
+        <td>
+          {% if i.status == 'completed' %}<span class="badge bg-success">completed</span>
+          {% else %}<span class="badge bg-warning text-dark">in progress</span>{% endif %}
+        </td>
+        <td>{{ i.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>{{ i.score.average_score if i.score else '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="text-muted text-center">No interviews yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}

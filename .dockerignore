@@ -1,0 +1,17 @@
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+htmlcov
+tests
+docs
+*.md
+!README.md
+uploads/*
+!uploads/.gitkeep
+.env
+app/services/ml_models/*.joblib
