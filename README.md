@@ -1,5 +1,17 @@
 # 🤖 AI Interview Assistant
 
+<!-- run-site -->
+## ▶️ Voir le site (en local)
+
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+Puis ouvrir dans le navigateur : **http://localhost:8000**
+
+> Admin : admin@interview.ai / Admin12345!
+
 <!-- doc-pdf -->
 ## 📄 Explication du code
 
