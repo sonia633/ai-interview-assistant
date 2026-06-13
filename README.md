@@ -1,5 +1,10 @@
 # 🤖 AI Interview Assistant
 
+<!-- doc-pdf -->
+## 📄 Explication du code
+
+📥 **[Télécharger le PDF d'explication du code](EXPLICATION-CODE.pdf)** — architecture, fichiers principaux, API et démarrage, expliqués pas à pas.
+
 A production-ready web platform that helps candidates prepare for job interviews using AI.
 Upload your resume, let the system **parse it**, **extract your skills**, **predict your
 ideal job role**, generate **personalised interview questions**, and receive **scored
